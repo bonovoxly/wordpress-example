@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    name: wordpress
+  name: wordpress
+  namespace: default
+spec:
+  minReadySeconds: 10
+  progressDeadlineSeconds: 180
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: wordpress
+  template:
+    metadata:
+      labels:
+        name: wordpress
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        env:
+          - name: WORDPRESS_DB_HOST
+            value: wordpress.cdaunn2sb3i0.us-east-1.rds.amazonaws.com
+          - name: WORDPRESS_DB_USER
+            value: admin
+          - name: WORDPRESS_DB_PASSWORD
+            value: asuperrandompassword.
+        image: wordpress
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256M
+          limits:
+            cpu: 1000m
+            memory: 2048M
