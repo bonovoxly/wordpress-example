@@ -1,0 +1,5 @@
+# normally we'd put these credentials in ansible-vault or some other controlled vault, but since this is a demo, they're plain text.
+#wordpress_db_host: # will use Ansible RDS facts if not defined
+#wordpress_db_user: # will default to "admin" if not defined
+#wordpress_db_password: # will default to "somepassword" if not defined
+

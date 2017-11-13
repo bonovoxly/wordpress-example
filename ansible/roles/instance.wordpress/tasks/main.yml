@@ -1,0 +1,39 @@
+---
+- name: Get RDS facts if wordpress_db_host is not defined.
+  rds:
+    command: facts
+    instance_name: "{{ wordpress_db_name | default('wordpress') }}"
+    region: "{{ region }}"
+  run_once: true
+  delegate_to: 127.0.0.1
+  become: no
+  register: wordpress_database_facts
+  when: wordpress_db_host is not defined
+
+- name: Debug
+  debug:
+    msg: "{{ wordpress_database_facts.instance.endpoint }}"
+  when: wordpress_db_host is not defined
+
+- name: Template Wordpress systemd file.
+  template:
+    src: wordpress.service.j2
+    dest: /etc/systemd/system/wordpress.service
+  register: wordpress_systemd_register
+
+- name: Reload systemd
+  command: systemctl daemon-reload
+
+- name: Restart the Wordpress service if changed.
+  service:
+    name: wordpress
+    state: restarted
+    enabled: yes
+  when: wordpress_systemd_register.changed
+
+- name: Make sure Wordpress service is running.
+  service:
+    name: wordpress
+    state: started
+    enabled: yes
+

@@ -1,0 +1,12 @@
+[all:vars]
+env=wpsimple
+region=us-east-1
+
+[localhost]
+127.0.0.1
+
+# ec2.py can be extremely slow. once IP addresses have been gathered, the instances can be added here.
+[wordpress]
+34.207.178.158
+54.211.3.45
+54.236.62.114

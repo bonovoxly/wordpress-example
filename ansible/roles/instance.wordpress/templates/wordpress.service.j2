@@ -1,0 +1,18 @@
+[Unit]
+Description=Wordpress Service.
+After=docker.service
+
+[Service]
+Type=simple
+Restart=no
+ExecStartPre=-/usr/bin/docker rm wordpress
+ExecStart=/usr/bin/docker run \
+            -p 80:80 \
+            -e WORDPRESS_DB_HOST={{ wordpress_db_host | default(wordpress_database_facts.instance.endpoint) }} \
+            -e WORDPRESS_DB_USER={{ wordpress_db_user | default('admin') }} \
+            -e WORDPRESS_DB_PASSWORD={{ wordpress_db_password | default('asuperrandompassword.') }} \
+            wordpress
+ExecStop=/usr/bin/docker stop wordpress
+
+[Install]
+WantedBy=multi-user.target

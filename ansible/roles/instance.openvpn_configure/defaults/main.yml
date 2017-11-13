@@ -1,0 +1,3 @@
+openvpn_docker_image: modops/openvpn-openvpn:20170114181518
+ssh_proxy: false
+split_tunnel: yes
