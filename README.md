@@ -4,34 +4,10 @@ This repository tracks the deployment and orchestration of a Wordpress site. Thi
 
 - Provide a Wordpress deployment locally, using docker-compose.
 - Provide a Wordpress deployment to AWS, using Terraform and Ansible. Terraform is used to provision the infrastructure and Ansible for configuration.
-- Provide a Wordpress deployment to Kubernetes. The Terraform and Ansible deployments and configurations for all AWS infrastructure is provided, but the focus should be on the simplicity of deploying using Kubernetes deployment and service files.
+- Kubernetes Wordpress deployment yaml and service yaml files.
+- Provide a Wordpress deployment to Kubernetes, including the Kubernetes provisioning. The Terraform and Ansible deployments and configurations for all AWS infrastructure is provided, but the focus should be on the simplicity of deploying using Kubernetes deployment and service files.
 
 While Kubernetes could be considered overkill for JUST a Wordpress deployment, they are useful in cases where organizations are already using Kubernetes for container orchestration for other services and work.
-
-
-# local docker-compose
-
-The first step is to run a local docker-compose. This is based on the most simple example, [found here](https://docs.docker.com/compose/wordpress/#define-the-project).
-
-To run locally:
-
-```
-docker-compose up
-```
-
-After that, connect to http://localhost:8000. Wordpress should be up and running.
-
-# AWS Instances, RDS, and an ELB
-
-Another basic example of a deployment is to have the following stack:
-
-- AWS infrastructure, including a VPC, subnets, security groups, Internet Gateway, instances, and ELB.
-- An Internet facing ELB.
-- Three Wordpress EC2 instances that the ELB connects to.
-- An Amazon RDS MySQL DB. The Wordpress instances connect to this DB.
-
-
-The following Terraform + Ansible playbook deploys that particular infrastructure.
 
 ## Requirements
 
@@ -44,7 +20,31 @@ AWS_ACCESS_KEY_ID=YOURACCESSKEY
 AWS_SECRET_ACCESS_KEY=YOURSECRETKEY
 ```
 
-This will allow Terraform to create the necessary infrastructure.
+This will allow Terraform and Ansible to create and configure the necessary infrastructure.
+
+# local docker-compose
+
+The first step is to run a local docker-compose. This is based on the most simple example, [found here](https://docs.docker.com/compose/wordpress/#define-the-project).
+
+To run locally:
+
+```
+docker-compose up
+```
+
+After that, connect to http://localhost:8000 with your preferred browser. Wordpress should be up and running.
+
+# AWS Instances, RDS, and an ELB
+
+This is a straighforward example of a Wordpress deployment to AWS. IT is composed of:
+
+- An AWS infrastructure, including a VPC, subnets, security groups, Internet Gateway, instances, and ELB.
+- An Internet facing ELB.
+- Three Wordpress EC2 instances that the ELB connects to (all in different Availability Zones).
+- An Amazon RDS MySQL DB. The Wordpress instances connect to this DB.
+
+
+The following Terraform + Ansible playbook deploys that particular infrastructure.
 
 ## Terraforming the Wordpress AWS environment
 
@@ -71,7 +71,7 @@ With the infrastructure provisioned, Ansible is used to configure the software o
 cd ansible
 ```
 
-- Optional - Gather the SSH public keys from the AWS System Console. Useful to securely get trust the public SSH keys on the instances ([more info on why I do this here, if you're interested](https://blog.billyc.io/2017/07/30/gathering-public-ssh-keys-from-the-aws-system-log-and-creating-custom-ssh-host-entries-using-ansible/):
+- Optional - Gather the SSH public keys from the AWS System Console. Useful to securely get trust the public SSH keys on the instances ([more info on why I do this here, if you're interested](https://blog.billyc.io/2017/07/30/gathering-public-ssh-keys-from-the-aws-system-log-and-creating-custom-ssh-host-entries-using-ansible/)):
 
 ```
 ansible-playbook localhost_ssh_scan.yml -e region=us-east-1
@@ -115,7 +115,7 @@ kubectl create -f wordpress-service.yml
 
 # Kubernetes Deployment - From Zero
 
-In order to test the Kubernetes deployment, a Kubernetes environment is needed. I decided to include the steps that I have used ([this is reused code from a custom Kubernetes deployment I've previously used](https://blog.billyc.io/2017/08/21/deploying-kubernetes-1.7.3-using-terraform-and-ansible/).
+In order to test the Kubernetes deployment, a Kubernetes environment is needed. I decided to include the steps that I have used ([this is reused code from a custom Kubernetes deployment I've previously used](https://blog.billyc.io/2017/08/21/deploying-kubernetes-1.7.3-using-terraform-and-ansible/)).
 
 ## Terraform the Infrastructure
 
@@ -160,7 +160,7 @@ This Ansible playbook configures the Kubernetes + Wordpress RDS DB infrastructur
 cd ansible
 ```
 
-- Optional - Gather the SSH public keys from the AWS System Console ([Again, info on why I do this here, if you're interested](https://blog.billyc.io/2017/07/30/gathering-public-ssh-keys-from-the-aws-system-log-and-creating-custom-ssh-host-entries-using-ansible/):
+- Optional - Gather the SSH public keys from the AWS System Console ([Again, info on why I do this here, if you're interested](https://blog.billyc.io/2017/07/30/gathering-public-ssh-keys-from-the-aws-system-log-and-creating-custom-ssh-host-entries-using-ansible/)):
 
 ```
 ansible-playbook localhost_ssh_scan.yml -e region=us-east-1
@@ -217,11 +217,16 @@ kubectl create -f wordpress-service.yml
 
 # Summary
 
-This did exceed the initial ask, but I wanted to include 
+This did exceed the initial ask, but I wanted to include some additional infrastructure. This comes from the fact that deploying stateless services benefit greatly from using some container orchestration platform (Mesos, Rancher, Docker Swarm, etc). In this singular example, it is overkill. However, most organizations don't have only one stateless service stack, but many. Having a platform like Kubernetes to manage them is extremely useful and thus, I wanted to include some demonstrations on how I would use Wordpress on an infrastructure like that.
+
+Thank you for your time.
+
+Bill
 
 # Issues, Limitations, and Design Decisions
 
 - Normally, I would create all instances as private, but for the sake of simplicity, I chose to use public instances. The Kubernetes infrastructure uses an OpenVPN instance.
+- For costs sake, I deployed an RDS instance that was NOT multi-AZ. For production level infrastructure, a multi-AZ RDS deployment should be created.
 - The instances do not maintain a shared session (this includes the Kubernetes deployment). This forces uses to authenticate multiple times. There are a couple ways to solve and reduce this. My preferred way is to use either Memcache or Redis. Another way is to write the state to a shared storage (NFS or AWS EFS). Future improvement would be to solve the PHP/Wordpress session issue.
 - For Terraforming and Ansible playbooks, I like to break them up into logical pieces. For instance, the VPC Terraform is seperate from the Kubernetes and Wordpress infrastructure. Makes things easier to manage, as opposed to a giant blob of infra deployed all at once.
 - I have historically used the [NGINX Ingress Controller](https://github.com/kubernetes/ingress-nginx). A single `ELB --> NGINX` layer is much nicer than a new ELB for every service you want to expose publically. I would have liked to have provided this NGINX ingress Kubernetes yaml.
