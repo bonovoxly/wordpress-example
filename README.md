@@ -2,7 +2,7 @@
 
 This repository tracks the deployment and orchestration of a Wordpress site. This wordpress site will consist of two core services; a stateless Wordpress service and a MySQL datastore. This repository includes the following:
 
-- Provide a Wordpress deployment locally, using docker-compose.
+- Provide a Wordpress deployment locally, using docker-compose (non-clustered, useful for development).
 - Provide a Wordpress deployment to AWS, using Terraform and Ansible. Terraform is used to provision the infrastructure and Ansible for configuration.
 - Kubernetes Wordpress deployment yaml and service yaml files.
 - Provide a Wordpress deployment to Kubernetes, including the Kubernetes provisioning. The Terraform and Ansible deployments and configurations for all AWS infrastructure is provided, but the focus should be on the simplicity of deploying using Kubernetes deployment and service files.
@@ -32,7 +32,7 @@ To run locally:
 docker-compose up
 ```
 
-After that, connect to http://localhost:8000 with your preferred browser. Wordpress should be up and running.
+After that, connect to http://localhost:8000 with your preferred browser. Wordpress should be up and running. Note this is not clustered.
 
 # AWS Instances, RDS, and an ELB
 
